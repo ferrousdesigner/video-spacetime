@@ -4,7 +4,7 @@ Turn a video into a 3D volume of frames — x · y · t — that you can orbit, 
 
 **Live:** https://ferrousdesigner.github.io/video-spacetime/
 
-- Upload any video (processed locally in your browser, nothing is uploaded)
+- Upload any video (processed locally in your browser, nothing is uploaded) — only the first 15 seconds are used
 - Drag to rotate · Scroll to zoom · Shift-drag to pan · Click a slice to jump there
 - Sample at 4 / 8 / 12 / 24 fps (capped at 360 slices)
 

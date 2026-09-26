@@ -30,6 +30,8 @@ interface Frame {
 }
 
 const MAX_SLICES = 360
+/** Uploaded videos are trimmed to their opening seconds. */
+const MAX_UPLOAD_SECONDS = 15
 const DEMO_DURATION = 12.5
 
 export function fmt(s: number) {
@@ -104,7 +106,11 @@ export class SpacetimeEngine {
       const dt = Math.min(0.1, (now - last) / 1000)
       last = now
       if (this.playing) {
-        if (this.video) this.t = this.video.currentTime
+        if (this.video) {
+          // loop within the trimmed window, not the whole file
+          if (this.video.currentTime >= this.duration) this.video.currentTime = 0
+          this.t = this.video.currentTime
+        }
         else {
           this.t += dt
           if (this.t >= this.duration) this.t = 0
@@ -303,7 +309,8 @@ export class SpacetimeEngine {
     v.src = this.videoUrl!
     this.emit({ loading: { show: true, pct: 0, label: 'Reading video' } })
     await new Promise((res, rej) => { v.onloadeddata = res; v.onerror = rej })
-    const dur = v.duration
+    const trimmed = v.duration > MAX_UPLOAD_SECONDS
+    const dur = Math.min(v.duration, MAX_UPLOAD_SECONDS)
     let n = Math.max(2, Math.floor(dur * rate))
     const capped = n > MAX_SLICES
     n = Math.min(n, MAX_SLICES)
@@ -328,7 +335,7 @@ export class SpacetimeEngine {
     this.setFrames(list, aspect)
     this.emit({
       loading: { show: false },
-      source: this.videoName + (capped ? ' · capped at ' + MAX_SLICES + ' slices' : ''),
+      source: this.videoName + (trimmed ? ' · first ' + MAX_UPLOAD_SECONDS + ' s' : capped ? ' · capped at ' + MAX_SLICES + ' slices' : ''),
       duration: dur,
       t: 0,
     })
